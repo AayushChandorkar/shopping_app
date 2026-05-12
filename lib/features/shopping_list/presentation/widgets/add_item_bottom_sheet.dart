@@ -148,29 +148,26 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
     final hasFace = await _faceDetection.hasFace(photo.path);
     if (!mounted) return;
     if (hasFace) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      final messenger = ScaffoldMessenger.of(context);
+      Navigator.of(context).pop();
+      messenger.showSnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 3),
           content: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.sentiment_satisfied_alt_rounded,
                 color: Colors.white,
               ),
-              const Gap(10),
+              Gap(10),
               Expanded(
-                child: Text(
-                  'A face has been detected',
-                  style: GoogleFonts.dmSans(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: Text('A face has been detected'),
               ),
             ],
           ),
-          duration: const Duration(seconds: 2),
         ),
       );
+      return;
     }
 
     // 2. Run text recognition + regex extraction.
@@ -183,25 +180,32 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
     if (price != null) {
       _priceCtrl.text = price.toStringAsFixed(2);
       final settings = ref.read(settingsProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
+      _showMrpScanSnackBar(
+        message:
             'Detected ${settings.currencySymbol}${price.toStringAsFixed(2)} '
             '— edit if wrong',
-          ),
-          duration: const Duration(seconds: 2),
-        ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
+      _showMrpScanSnackBar(
+        message:
             "Couldn't read a price — try again with the MRP box centered and well-lit.",
-          ),
-          duration: Duration(seconds: 3),
-        ),
       );
     }
+  }
+
+  void _showMrpScanSnackBar({required String message}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 2),
+        content: Text(
+          message,
+          style: GoogleFonts.dmSans(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
   }
 
   void _submit() {
@@ -278,7 +282,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
                   ),
                 ),
                 Material(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(10),

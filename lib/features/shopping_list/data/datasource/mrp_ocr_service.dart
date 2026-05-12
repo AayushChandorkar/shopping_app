@@ -12,11 +12,11 @@ class MrpOcrService {
   static final RegExp _numberRegex = RegExp(r'\d+(?:,\d{3})*(?:\.\d{1,2})?');
 
   static final RegExp _perUnitSlash = RegExp(
-    r'^\s*/\s*(?:g|gm|gms|kg|mg|ml|l|litre|liter|oz|lb|pc|pcs|piece|serving|100\s*(?:g|ml))\b',
+    r'^\s*/\s*(?:g|gm|gms|kg|mg|ml|l|litre|liter|oz|lb|pc|pcs|piece|serving|tab|tabs|tablet|tablets|cap|caps|capsule|capsules|100\s*(?:g|ml))\b',
     caseSensitive: false,
   );
   static final RegExp _perUnitWord = RegExp(
-    r'^\s*per\s+(?:g|gm|gms|kg|ml|l|oz|serving|piece|pc)\b',
+    r'^\s*per\s+(?:g|gm|gms|kg|ml|l|oz|serving|piece|pc|tab|tablet|cap|capsule)\b',
     caseSensitive: false,
   );
 
@@ -33,6 +33,11 @@ class MrpOcrService {
 
   static final RegExp _currencyPrefix = RegExp(
     r'(?:Rs\.?|INR|₹)\s*$',
+    caseSensitive: false,
+  );
+
+  static final RegExp _ocrCurrencyPrefix = RegExp(
+    r'(?:^|[\s.])(?:f|r)\s*[:.]?\s*$',
     caseSensitive: false,
   );
 
@@ -88,13 +93,14 @@ class MrpOcrService {
         );
 
         final currencyPrefix = _currencyPrefix.hasMatch(head);
+        final ocrCurrencyPrefix = _ocrCurrencyPrefix.hasMatch(head);
 
         candidates.add(
           _PriceCandidate(
             value: v,
             position: start,
             nearMrp: nearMrp,
-            currencyPrefix: currencyPrefix,
+            currencyPrefix: currencyPrefix || ocrCurrencyPrefix,
           ),
         );
       }

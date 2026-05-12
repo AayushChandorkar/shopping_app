@@ -18,8 +18,8 @@ class SearchEmptyView extends StatelessWidget {
           Container(
             width: 90,
             height: 90,
-            decoration: const BoxDecoration(
-              color: AppColors.primaryLight,
+            decoration: BoxDecoration(
+              color: AppColors.primarySoftColor(context),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -36,7 +36,7 @@ class SearchEmptyView extends StatelessWidget {
             style: GoogleFonts.spaceGrotesk(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryColor(context),
             ),
           ),
           const Gap(8),
@@ -47,7 +47,7 @@ class SearchEmptyView extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryColor(context),
               height: 1.5,
             ),
           ),

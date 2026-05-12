@@ -57,15 +57,18 @@ class SmartShopApp extends ConsumerWidget {
   }
 
   ThemeData _buildLightTheme() {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.light,
+    );
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        brightness: Brightness.light,
-      ),
+      colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
       textTheme: GoogleFonts.dmSansTextTheme(),
+      dividerColor: colorScheme.outlineVariant,
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         elevation: 0,
@@ -75,19 +78,28 @@ class SmartShopApp extends ConsumerWidget {
   }
 
   ThemeData _buildDarkTheme() {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.dark,
+    ).copyWith(
+      surface: const Color(0xFF15181D),
+      surfaceContainerHighest: const Color(0xFF20242B),
+      onSurface: const Color(0xFFF5F7FA),
+      onSurfaceVariant: const Color(0xFFB0B7C3),
+      outlineVariant: const Color(0xFF343A45),
+    );
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        brightness: Brightness.dark,
-      ),
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: const Color(0xFF0E1116),
       textTheme: GoogleFonts.dmSansTextTheme(
         ThemeData(brightness: Brightness.dark).textTheme,
       ),
+      dividerColor: colorScheme.outlineVariant,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF121212),
+        backgroundColor: Color(0xFF0E1116),
         elevation: 0,
         scrolledUnderElevation: 0,
       ),

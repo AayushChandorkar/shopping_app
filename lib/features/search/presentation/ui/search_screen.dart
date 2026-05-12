@@ -37,19 +37,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final resultsAsync = ref.watch(searchResultsProvider(query));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundColor(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.backgroundColor(context),
         elevation: 0,
         titleSpacing: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_rounded,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryColor(context),
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: _buildSearchBar(),
+        title: _buildSearchBar(context),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +61,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 'Results for "$query"',
                 style: GoogleFonts.dmSans(
                   fontSize: 13,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryColor(context),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -80,7 +80,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 child: Text(
                   'Something went wrong',
                   style: GoogleFonts.dmSans(
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryColor(context),
                   ),
                 ),
               ),
@@ -94,7 +94,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 16),
       child: TextField(
@@ -102,30 +102,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         autofocus: true,
         style: GoogleFonts.dmSans(
           fontSize: 15,
-          color: AppColors.textPrimary,
+          color: AppColors.textPrimaryColor(context),
         ),
         decoration: InputDecoration(
           hintText: 'Search your shopping list...',
           hintStyle: GoogleFonts.dmSans(
-            color: AppColors.textHint,
+            color: AppColors.textHintColor(context),
             fontSize: 15,
           ),
           filled: true,
-          fillColor: AppColors.surfaceVariant,
+          fillColor: AppColors.surfaceVariantColor(context),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.search_rounded,
-            color: AppColors.textHint,
+            color: AppColors.textHintColor(context),
             size: 20,
           ),
           suffixIcon: _searchCtrl.text.isNotEmpty
               ? IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.close_rounded,
-              color: AppColors.textHint,
+              color: AppColors.textHintColor(context),
               size: 18,
             ),
             onPressed: () {
@@ -150,7 +150,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
       itemCount: items.length,
-      separatorBuilder: (_, __) => const Gap(8),
+      separatorBuilder: (context, index) => const Gap(8),
       itemBuilder: (context, index) {
         final item = items[index];
         return SearchResultTile(

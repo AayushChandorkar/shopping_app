@@ -15,6 +15,7 @@ class ShoppingListScreen extends ConsumerWidget {
   const ShoppingListScreen({super.key});
 
   PopupMenuItem<String> _sortMenuItem(
+    BuildContext context,
     String value,
     IconData icon,
     String currentSort,
@@ -27,7 +28,9 @@ class ShoppingListScreen extends ConsumerWidget {
           Icon(
             icon,
             size: 18,
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            color: isSelected
+                ? AppColors.primary
+                : AppColors.textSecondaryColor(context),
           ),
           const Gap(12),
           Text(
@@ -35,7 +38,9 @@ class ShoppingListScreen extends ConsumerWidget {
             style: GoogleFonts.dmSans(
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? AppColors.primary : AppColors.textPrimary,
+              color: isSelected
+                  ? AppColors.primary
+                  : AppColors.textPrimaryColor(context),
             ),
           ),
           const Spacer(),
@@ -51,7 +56,7 @@ class ShoppingListScreen extends ConsumerWidget {
     final state = ref.watch(shoppingListProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundColor(context),
       body: CustomScrollView(
         slivers: [
           _buildAppBar(context, ref),
@@ -71,7 +76,7 @@ class ShoppingListScreen extends ConsumerWidget {
     return SliverAppBar(
       expandedHeight: 120,
       pinned: true,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundColor(context),
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
@@ -80,7 +85,7 @@ class ShoppingListScreen extends ConsumerWidget {
           style: GoogleFonts.spaceGrotesk(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryColor(context),
           ),
         ),
         background: Container(
@@ -101,7 +106,7 @@ class ShoppingListScreen extends ConsumerWidget {
             return PopupMenuButton<String>(
               icon: const Icon(Icons.sort_rounded, color: Colors.white70),
               tooltip: 'Sort',
-              color: AppColors.surface,
+              color: AppColors.surfaceColor(context),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -110,12 +115,19 @@ class ShoppingListScreen extends ConsumerWidget {
               },
               itemBuilder: (_) => [
                 _sortMenuItem(
+                  context,
                   'Date Added',
                   Icons.calendar_today_rounded,
                   currentSort,
                 ),
-                _sortMenuItem('Name', Icons.sort_by_alpha_rounded, currentSort),
                 _sortMenuItem(
+                  context,
+                  'Name',
+                  Icons.sort_by_alpha_rounded,
+                  currentSort,
+                ),
+                _sortMenuItem(
+                  context,
                   'Price',
                   currencyIcon,
                   currentSort,
@@ -175,17 +187,21 @@ class ShoppingListScreen extends ConsumerWidget {
                   style: GoogleFonts.dmSans(
                     fontSize: 13,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                    color: isSelected
+                        ? Colors.white
+                        : AppColors.textSecondaryColor(context),
                   ),
                 ),
                 selected: isSelected,
                 onSelected: (_) =>
                     ref.read(activeFilterProvider.notifier).state = filter,
-                backgroundColor: AppColors.surface,
+                backgroundColor: AppColors.surfaceColor(context),
                 selectedColor: AppColors.primary,
                 checkmarkColor: Colors.white,
                 side: BorderSide(
-                  color: isSelected ? AppColors.primary : AppColors.border,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.borderColor(context),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -209,7 +225,7 @@ class ShoppingListScreen extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       sliver: SliverList.separated(
         itemCount: filtered.length,
-        separatorBuilder: (_, __) => const Gap(8),
+        separatorBuilder: (context, index) => const Gap(8),
         itemBuilder: (context, index) {
           final item = filtered[index];
           return ShoppingItemTile(
@@ -263,25 +279,27 @@ class ShoppingListScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceColor(ctx),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Clear Checked Items',
           style: GoogleFonts.spaceGrotesk(
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryColor(ctx),
           ),
         ),
         content: Text(
           'Remove all checked items from your list?',
-          style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+          style: GoogleFonts.dmSans(color: AppColors.textSecondaryColor(ctx)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Cancel',
-              style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+              style: GoogleFonts.dmSans(
+                color: AppColors.textSecondaryColor(ctx),
+              ),
             ),
           ),
           ElevatedButton(

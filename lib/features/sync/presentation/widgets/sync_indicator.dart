@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gap/gap.dart';
-import '../../data/sync_service.dart';
 import '../../domain/sync_status.dart';
 import '../../../../../core/themes/app_colors.dart';
 import '../provider/sync_provider.dart';
@@ -17,11 +16,11 @@ class SyncIndicator extends ConsumerWidget {
     return syncAsync.when(
       loading: () => _buildBadge(
         label: 'Connecting...',
-        color: AppColors.textSecondary,
+        color: AppColors.textSecondaryColor(context),
         icon: Icons.cloud_outlined,
         animate: false,
       ),
-      error: (_, __) => _buildBadge(
+      error: (_, _) => _buildBadge(
         label: SyncStatus.error.label,
         color: AppColors.error,
         icon: Icons.cloud_off_rounded,
@@ -47,9 +46,9 @@ class SyncIndicator extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

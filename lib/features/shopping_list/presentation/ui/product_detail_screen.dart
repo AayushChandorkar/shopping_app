@@ -20,7 +20,7 @@ class ProductDetailScreen extends ConsumerWidget {
     final itemAsync = ref.watch(productDetailProvider(productId));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundColor(context),
       body: itemAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
@@ -75,7 +75,7 @@ class ProductDetailScreen extends ConsumerWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -109,7 +109,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   'Added ${_formatDate(item.createdAt)}',
                   style: GoogleFonts.dmSans(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textSecondaryColor(context),
                   ),
                 ),
               ],
@@ -172,7 +172,7 @@ class ProductDetailScreen extends ConsumerWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: item.isChecked
-                          ? AppColors.surfaceVariant
+                          ? AppColors.surfaceVariantColor(context)
                           : AppColors.primary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -184,7 +184,7 @@ class ProductDetailScreen extends ConsumerWidget {
                           ? Icons.remove_done_rounded
                           : Icons.check_rounded,
                       color: item.isChecked
-                          ? AppColors.textSecondary
+                          ? AppColors.textSecondaryColor(context)
                           : Colors.white,
                     ),
                     label: Text(
@@ -193,7 +193,7 @@ class ProductDetailScreen extends ConsumerWidget {
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: item.isChecked
-                            ? AppColors.textSecondary
+                            ? AppColors.textSecondaryColor(context)
                             : Colors.white,
                       ),
                     ),
@@ -250,13 +250,15 @@ class ProductDetailScreen extends ConsumerWidget {
             style: GoogleFonts.spaceGrotesk(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryColor(context),
             ),
           ),
           const Gap(8),
           Text(
             message,
-            style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+            style: GoogleFonts.dmSans(
+              color: AppColors.textSecondaryColor(context),
+            ),
           ),
           const Gap(24),
           ElevatedButton(
@@ -277,14 +279,18 @@ class ProductDetailScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.inbox_rounded, color: AppColors.textHint, size: 56),
+          Icon(
+            Icons.inbox_rounded,
+            color: AppColors.textHintColor(context),
+            size: 56,
+          ),
           const Gap(16),
           Text(
             'Item not found',
             style: GoogleFonts.spaceGrotesk(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryColor(context),
             ),
           ),
           const Gap(24),
@@ -318,25 +324,27 @@ class ProductDetailScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.surfaceColor(ctx),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Remove Item',
           style: GoogleFonts.spaceGrotesk(
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.textPrimaryColor(ctx),
           ),
         ),
         content: Text(
           'Remove "${item.name}" from your list?',
-          style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+          style: GoogleFonts.dmSans(color: AppColors.textSecondaryColor(ctx)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Cancel',
-              style: GoogleFonts.dmSans(color: AppColors.textSecondary),
+              style: GoogleFonts.dmSans(
+                color: AppColors.textSecondaryColor(ctx),
+              ),
             ),
           ),
           ElevatedButton(
@@ -380,13 +388,13 @@ class _StatusBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: isChecked
-            ? AppColors.primary.withOpacity(0.1)
-            : AppColors.warning.withOpacity(0.1),
+            ? AppColors.primary.withValues(alpha: 0.1)
+            : AppColors.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isChecked
-              ? AppColors.primary.withOpacity(0.3)
-              : AppColors.warning.withOpacity(0.3),
+              ? AppColors.primary.withValues(alpha: 0.3)
+              : AppColors.warning.withValues(alpha: 0.3),
         ),
       ),
       child: Row(

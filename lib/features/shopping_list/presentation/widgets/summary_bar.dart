@@ -28,7 +28,7 @@ class SummaryBar extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -84,7 +84,7 @@ class _StatChip extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, color: Colors.white.withOpacity(0.8), size: 16),
+          Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 16),
           const Gap(4),
           Text(
             value,
@@ -98,7 +98,7 @@ class _StatChip extends StatelessWidget {
             label,
             style: GoogleFonts.dmSans(
               fontSize: 10,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -113,7 +113,7 @@ class _Divider extends StatelessWidget {
     return Container(
       width: 1,
       height: 36,
-      color: Colors.white.withOpacity(0.2),
+      color: Colors.white.withValues(alpha: 0.2),
     );
   }
 }

@@ -57,20 +57,16 @@ class ShoppingItemTile extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         decoration: BoxDecoration(
-          color: item.isChecked ? AppColors.checkedOverlay : AppColors.surface,
+          color: item.isChecked
+              ? AppColors.checkedOverlayColor(context)
+              : AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: item.isChecked ? AppColors.primary.withOpacity(0.3) : AppColors.border,
+            color: item.isChecked
+                ? AppColors.primary.withValues(alpha: 0.3)
+                : AppColors.borderColor(context),
           ),
-          boxShadow: item.isChecked
-              ? []
-              : [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: item.isChecked ? [] : AppColors.cardShadow(context),
         ),
         child: InkWell(
           onTap: onToggle,
@@ -79,11 +75,11 @@ class ShoppingItemTile extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                _buildCheckbox(),
+                _buildCheckbox(context),
                 const Gap(12),
-                Expanded(child: _buildContent(currencySymbol)),
+                Expanded(child: _buildContent(context, currencySymbol)),
                 const Gap(12),
-                _buildPrice(currencySymbol),
+                _buildPrice(context, currencySymbol),
               ],
             ),
           ),
@@ -92,7 +88,7 @@ class ShoppingItemTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildCheckbox() {
+  Widget _buildCheckbox(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       width: 24,
@@ -101,7 +97,9 @@ class ShoppingItemTile extends ConsumerWidget {
         color: item.isChecked ? AppColors.primary : Colors.transparent,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: item.isChecked ? AppColors.primary : AppColors.border,
+          color: item.isChecked
+              ? AppColors.primary
+              : AppColors.borderColor(context),
           width: 2,
         ),
       ),
@@ -111,7 +109,7 @@ class ShoppingItemTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(String currencySymbol) {
+  Widget _buildContent(BuildContext context, String currencySymbol) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -121,10 +119,10 @@ class ShoppingItemTile extends ConsumerWidget {
             fontSize: 15,
             fontWeight: FontWeight.w600,
             color: item.isChecked
-                ? AppColors.textSecondary
-                : AppColors.textPrimary,
+                ? AppColors.textSecondaryColor(context)
+                : AppColors.textPrimaryColor(context),
             decoration: item.isChecked ? TextDecoration.lineThrough : null,
-            decorationColor: AppColors.textSecondary,
+            decorationColor: AppColors.textSecondaryColor(context),
           ),
         ),
         const Gap(3),
@@ -132,14 +130,14 @@ class ShoppingItemTile extends ConsumerWidget {
           '${_formatQty(item.quantity)} × $currencySymbol${item.price.toStringAsFixed(2)}',
           style: GoogleFonts.dmSans(
             fontSize: 12,
-            color: AppColors.textSecondary,
+            color: AppColors.textSecondaryColor(context),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPrice(String currencySymbol) {
+  Widget _buildPrice(BuildContext context, String currencySymbol) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -148,7 +146,9 @@ class ShoppingItemTile extends ConsumerWidget {
           style: GoogleFonts.spaceGrotesk(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: item.isChecked ? AppColors.textSecondary : AppColors.primary,
+            color: item.isChecked
+                ? AppColors.textSecondaryColor(context)
+                : AppColors.primary,
           ),
         ),
       ],

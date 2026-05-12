@@ -24,4 +24,51 @@ class AppColors {
   static const Color divider = Color(0xFFF3F4F6);
 
   static const Color checkedOverlay = Color(0x1A4CAF82);
+
+  static Color backgroundColor(BuildContext context) =>
+      Theme.of(context).scaffoldBackgroundColor;
+
+  static Color surfaceColor(BuildContext context) =>
+      Theme.of(context).colorScheme.surface;
+
+  static Color surfaceVariantColor(BuildContext context) =>
+      Theme.of(context).colorScheme.surfaceContainerHighest;
+
+  static Color textPrimaryColor(BuildContext context) =>
+      Theme.of(context).colorScheme.onSurface;
+
+  static Color textSecondaryColor(BuildContext context) =>
+      Theme.of(context).colorScheme.onSurfaceVariant;
+
+  static Color textHintColor(BuildContext context) =>
+      Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.72);
+
+  static Color borderColor(BuildContext context) =>
+      Theme.of(context).colorScheme.outlineVariant;
+
+  static Color dividerColor(BuildContext context) =>
+      Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.45);
+
+  static Color checkedOverlayColor(BuildContext context) =>
+      primary.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.22 : 0.10,
+      );
+
+  static Color primarySoftColor(BuildContext context) => primary.withValues(
+    alpha: Theme.of(context).brightness == Brightness.dark ? 0.22 : 0.12,
+  );
+
+  static List<BoxShadow> cardShadow(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return const [];
+    }
+
+    return [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: 0.04),
+        blurRadius: 8,
+        offset: const Offset(0, 2),
+      ),
+    ];
+  }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:gap/gap.dart';
 import '../../../../core/themes/app_colors.dart';
 
 class DetailInfoCard extends StatelessWidget {
@@ -22,16 +21,10 @@ class DetailInfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.borderColor(context)),
+        boxShadow: AppColors.cardShadow(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,7 +33,7 @@ class DetailInfoCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -53,14 +46,14 @@ class DetailInfoCard extends StatelessWidget {
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textPrimaryColor(context),
                 ),
               ),
               Text(
                 label,
                 style: GoogleFonts.dmSans(
                   fontSize: 11,
-                  color: AppColors.textSecondary,
+                  color: AppColors.textSecondaryColor(context),
                 ),
               ),
             ],

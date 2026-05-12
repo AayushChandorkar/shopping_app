@@ -25,16 +25,10 @@ class SearchResultTile extends ConsumerWidget {
     final currencyIcon = settings.currencyIcon;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.borderColor(context)),
+        boxShadow: AppColors.cardShadow(context),
       ),
       child: Row(
         children: [
@@ -58,7 +52,7 @@ class SearchResultTile extends ConsumerWidget {
                       style: GoogleFonts.dmSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: AppColors.textPrimaryColor(context),
                       ),
                     ),
                     const Gap(4),
@@ -86,7 +80,11 @@ class SearchResultTile extends ConsumerWidget {
           ),
 
           
-          Container(width: 1, height: 48, color: AppColors.border),
+          Container(
+            width: 1,
+            height: 48,
+            color: AppColors.borderColor(context),
+          ),
 
           
           InkWell(
@@ -134,16 +132,19 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedColor = color == AppColors.textSecondary
+        ? AppColors.textSecondaryColor(context)
+        : color;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 11, color: color),
+        Icon(icon, size: 11, color: resolvedColor),
         const Gap(3),
         Text(
           label,
           style: GoogleFonts.dmSans(
             fontSize: 12,
-            color: color,
+            color: resolvedColor,
             fontWeight: FontWeight.w500,
           ),
         ),

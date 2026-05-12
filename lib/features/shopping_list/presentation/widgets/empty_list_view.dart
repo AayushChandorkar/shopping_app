@@ -17,7 +17,7 @@ class EmptyListView extends StatelessWidget {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.primaryLight,
+              color: AppColors.primarySoftColor(context),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -32,7 +32,7 @@ class EmptyListView extends StatelessWidget {
             style: GoogleFonts.spaceGrotesk(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: AppColors.textPrimaryColor(context),
             ),
           ),
           const Gap(8),
@@ -41,7 +41,7 @@ class EmptyListView extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondaryColor(context),
               height: 1.5,
             ),
           ),

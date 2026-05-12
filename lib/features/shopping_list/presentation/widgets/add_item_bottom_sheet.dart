@@ -246,8 +246,8 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
     final currencyIcon = settings.currencyIcon;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 8, 20, bottom + 24),
@@ -263,7 +263,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: AppColors.borderColor(context),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -277,7 +277,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: AppColors.textPrimaryColor(context),
                     ),
                   ),
                 ),
@@ -310,14 +310,17 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
             ),
             const Gap(20),
 
-            _buildLabel('Item Name'),
+            _buildLabel(context, 'Item Name'),
             const Gap(6),
             TextFormField(
               controller: _nameCtrl,
               autofocus: !_isEditing,
               textCapitalization: TextCapitalization.words,
-              style: GoogleFonts.dmSans(color: AppColors.textPrimary),
+              style: GoogleFonts.dmSans(
+                color: AppColors.textPrimaryColor(context),
+              ),
               decoration: _inputDecoration(
+                context,
                 'e.g. Organic Milk',
                 Icons.label_outline,
               ),
@@ -326,14 +329,20 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
             ),
             const Gap(16),
 
-            _buildLabel('Number of Items'),
+            _buildLabel(context, 'Number of Items'),
             const Gap(6),
             TextFormField(
               controller: _quantityCtrl,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: GoogleFonts.dmSans(color: AppColors.textPrimary),
-              decoration: _inputDecoration('1', Icons.numbers_rounded),
+              style: GoogleFonts.dmSans(
+                color: AppColors.textPrimaryColor(context),
+              ),
+              decoration: _inputDecoration(
+                context,
+                '1',
+                Icons.numbers_rounded,
+              ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Required';
                 final n = int.tryParse(v);
@@ -344,15 +353,21 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
             ),
             const Gap(16),
 
-            _buildLabel('Price per Item ($currencySymbol)'),
+            _buildLabel(context, 'Price per Item ($currencySymbol)'),
             const Gap(6),
             TextFormField(
               controller: _priceCtrl,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              style: GoogleFonts.dmSans(color: AppColors.textPrimary),
-              decoration: _inputDecoration('0.00', currencyIcon).copyWith(
+              style: GoogleFonts.dmSans(
+                color: AppColors.textPrimaryColor(context),
+              ),
+              decoration: _inputDecoration(
+                context,
+                '0.00',
+                currencyIcon,
+              ).copyWith(
                 suffixIcon: IconButton(
                   onPressed: _isOcrScanning ? null : _handleMrpScan,
                   tooltip: 'Scan MRP from package',
@@ -409,26 +424,33 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
     );
   }
 
-  Widget _buildLabel(String text) {
+  Widget _buildLabel(BuildContext context, String text) {
     return Text(
       text,
       style: GoogleFonts.dmSans(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.textSecondary,
+        color: AppColors.textSecondaryColor(context),
       ),
     );
   }
 
-  InputDecoration _inputDecoration(String hint, IconData? icon) {
+  InputDecoration _inputDecoration(
+    BuildContext context,
+    String hint,
+    IconData? icon,
+  ) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.dmSans(color: AppColors.textHint, fontSize: 14),
+      hintStyle: GoogleFonts.dmSans(
+        color: AppColors.textHintColor(context),
+        fontSize: 14,
+      ),
       prefixIcon: icon != null
-          ? Icon(icon, color: AppColors.textHint, size: 18)
+          ? Icon(icon, color: AppColors.textHintColor(context), size: 18)
           : null,
       filled: true,
-      fillColor: AppColors.surfaceVariant,
+      fillColor: AppColors.surfaceVariantColor(context),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,

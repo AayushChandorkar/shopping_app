@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/themes/app_colors.dart';
 import '../../../settings/presentation/provider/settings_provider.dart';
+import '../../data/datasource/face_detection_service.dart';
 import '../../data/datasource/mrp_ocr_service.dart';
 import '../../data/datasource/product_cache_local_datasource.dart';
 import '../../data/datasource/product_lookup_service.dart';
@@ -27,6 +28,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _lookupService = ProductLookupService();
   final _productCache = ProductCacheLocalDataSource();
+  final _faceDetection = FaceDetectionService();
   final _mrpOcr = MrpOcrService();
   final _imagePicker = ImagePicker();
   late final TextEditingController _nameCtrl;
@@ -60,6 +62,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
     _nameCtrl.dispose();
     _quantityCtrl.dispose();
     _priceCtrl.dispose();
+    _faceDetection.close();
     super.dispose();
   }
 
@@ -142,6 +145,34 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
     if (!mounted || photo == null) return;
     debugPrint('[MrpScan] captured -> ${photo.path}');
 
+    final hasFace = await _faceDetection.hasFace(photo.path);
+    if (!mounted) return;
+    if (hasFace) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.sentiment_satisfied_alt_rounded,
+                color: Colors.white,
+              ),
+              const Gap(10),
+              Expanded(
+                child: Text(
+                  'A face has been detected',
+                  style: GoogleFonts.dmSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+
     // 2. Run text recognition + regex extraction.
     setState(() => _isOcrScanning = true);
     final price = await _mrpOcr.extractMrpFromImage(photo.path);
@@ -190,11 +221,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
         price: price,
       );
     } else {
-      notifier.addItem(
-        name: name,
-        quantity: quantity,
-        price: price,
-      );
+      notifier.addItem(name: name, quantity: quantity, price: price);
     }
 
     // If this submission came from a scan, remember what the user saved
@@ -302,10 +329,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               style: GoogleFonts.dmSans(color: AppColors.textPrimary),
-              decoration: _inputDecoration(
-                '1',
-                Icons.numbers_rounded,
-              ),
+              decoration: _inputDecoration('1', Icons.numbers_rounded),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Required';
                 final n = int.tryParse(v);
@@ -324,10 +348,7 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
                 decimal: true,
               ),
               style: GoogleFonts.dmSans(color: AppColors.textPrimary),
-              decoration: _inputDecoration(
-                '0.00',
-                currencyIcon,
-              ).copyWith(
+              decoration: _inputDecoration('0.00', currencyIcon).copyWith(
                 suffixIcon: IconButton(
                   onPressed: _isOcrScanning ? null : _handleMrpScan,
                   tooltip: 'Scan MRP from package',

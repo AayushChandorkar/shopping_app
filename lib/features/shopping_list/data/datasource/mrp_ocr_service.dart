@@ -41,11 +41,17 @@ class MrpOcrService {
     caseSensitive: false,
   );
   static final RegExp _explicitCurrencyAmount = RegExp(
-    r'(?:Rs\.?|INR|₹)\s*([0-9OoSsIl|Bb]+(?:[.,][0-9OoSsIl|Bb]{1,2})?)',
+    r'(?:Rs\.?|INR|₹)\s*([0-9OoSsIl|Bb]+(?:[.,][0-9OoSsIl|Bb]{1,2})?)\s*(?:/-|/)?',
     caseSensitive: false,
   );
   static final RegExp _ocrStickerCurrencyAmount = RegExp(
-    r'(?:^|[\s:])(?:[EeFfRr])\s*([0-9OoSsIl|Bb]+(?:[.,][0-9OoSsIl|Bb]{1,2})?)',
+    r'(?:^|[\s:])(?:[EeFfRr])\s*([0-9OoSsIl|Bb]+(?:[.,][0-9OoSsIl|Bb]{1,2})?)\s*(?:/-|/)?',
+    caseSensitive: false,
+  );
+  static final RegExp _explicitMrpAmount = RegExp(
+    r'(?:M\s*\.?\s*R\s*\.?\s*P\s*\.?|Maximum\s*Retail\s*Price(?:\s*[:.-])?)\s*'
+    r'(?:Rs\.?|INR|₹)?\s*'
+    r'([0-9OoSsIl|Bb]+(?:[.,][0-9OoSsIl|Bb]{1,2})?)\s*(?:/-|/)?',
     caseSensitive: false,
   );
   static final RegExp _currencyToken = RegExp(
@@ -105,6 +111,7 @@ class MrpOcrService {
         required bool currencyPrefix,
         required int? distanceFromMrp,
         required bool hasDecimal,
+        required int signalStrength,
       }) {
         final key = [
           value.toStringAsFixed(2),
@@ -112,6 +119,7 @@ class MrpOcrService {
           nearMrp ? '1' : '0',
           currencyPrefix ? '1' : '0',
           distanceFromMrp ?? -1,
+          signalStrength,
         ].join('|');
         if (!seenKeys.add(key)) return;
         candidates.add(
@@ -122,6 +130,7 @@ class MrpOcrService {
             currencyPrefix: currencyPrefix,
             distanceFromMrp: distanceFromMrp,
             hasDecimal: hasDecimal,
+            signalStrength: signalStrength,
           ),
         );
       }
@@ -163,6 +172,7 @@ class MrpOcrService {
             currencyPrefix: true,
             distanceFromMrp: 0,
             hasDecimal: amount.hasDecimal,
+            signalStrength: 4,
           );
         }
       }
@@ -190,7 +200,7 @@ class MrpOcrService {
 
         final amountSources = <String>[
           trimmed,
-          if (nextLine != null) nextLine,
+          ?nextLine,
         ];
 
         for (final source in amountSources) {
@@ -219,64 +229,39 @@ class MrpOcrService {
               currencyPrefix: hasCurrency || prevHasCurrency,
               distanceFromMrp: nearMrp ? 0 : null,
               hasDecimal: normalizedAmount.contains('.') || normalizedAmount.contains(','),
+              signalStrength: hasCurrency ? 3 : (prevHasCurrency ? 2 : 1),
             );
           }
         }
       }
 
       for (final m in _explicitCurrencyAmount.allMatches(text)) {
-        final rawAmount = m.group(1);
-        if (rawAmount == null) continue;
-
-        final normalizedAmount = _normalizeOcrAmount(rawAmount);
-        final value = double.tryParse(normalizedAmount.replaceAll(',', '.'));
-        if (value == null || value < 2 || value >= 100000) continue;
-
-        final start = m.start;
-        final end = m.end;
-        final tail = text.substring(end, (end + 20).clamp(0, text.length));
-
-        if (_perUnitSlash.hasMatch(tail)) continue;
-        if (_perUnitWord.hasMatch(tail)) continue;
-        if (_weightUnit.hasMatch(tail)) continue;
-
-        final distanceFromMrp = _distanceFromMrp(mrpEnds, start);
-
-        addCandidate(
-          value: value,
-          position: start,
-          nearMrp: distanceFromMrp != null && distanceFromMrp <= 150,
-          currencyPrefix: true,
-          distanceFromMrp: distanceFromMrp,
-          hasDecimal: normalizedAmount.contains('.') || normalizedAmount.contains(','),
+        _addRegexCandidate(
+          match: m,
+          text: text,
+          mrpEnds: mrpEnds,
+          addCandidate: addCandidate,
+          signalStrength: 5,
         );
       }
 
       for (final m in _ocrStickerCurrencyAmount.allMatches(text)) {
-        final rawAmount = m.group(1);
-        if (rawAmount == null) continue;
+        _addRegexCandidate(
+          match: m,
+          text: text,
+          mrpEnds: mrpEnds,
+          addCandidate: addCandidate,
+          signalStrength: 5,
+        );
+      }
 
-        final normalizedAmount = _normalizeOcrAmount(rawAmount);
-        final value = double.tryParse(normalizedAmount.replaceAll(',', '.'));
-        if (value == null || value < 2 || value >= 100000) continue;
-
-        final start = m.start;
-        final end = m.end;
-        final tail = text.substring(end, (end + 20).clamp(0, text.length));
-
-        if (_perUnitSlash.hasMatch(tail)) continue;
-        if (_perUnitWord.hasMatch(tail)) continue;
-        if (_weightUnit.hasMatch(tail)) continue;
-
-        final distanceFromMrp = _distanceFromMrp(mrpEnds, start);
-
-        addCandidate(
-          value: value,
-          position: start,
-          nearMrp: distanceFromMrp != null && distanceFromMrp <= 150,
-          currencyPrefix: true,
-          distanceFromMrp: distanceFromMrp,
-          hasDecimal: normalizedAmount.contains('.') || normalizedAmount.contains(','),
+      for (final m in _explicitMrpAmount.allMatches(text)) {
+        _addRegexCandidate(
+          match: m,
+          text: text,
+          mrpEnds: mrpEnds,
+          addCandidate: addCandidate,
+          signalStrength: 6,
         );
       }
 
@@ -317,12 +302,13 @@ class MrpOcrService {
           currencyPrefix: currencyPrefix || ocrCurrencyPrefix,
           distanceFromMrp: distanceFromMrp,
           hasDecimal: raw.contains('.') || raw.contains(','),
+          signalStrength: (currencyPrefix || ocrCurrencyPrefix) ? 3 : 1,
         );
       }
 
       debugPrint(
         '[MrpOcr] candidates:\n'
-        '${candidates.map((c) => '  ${c.value}  mrp=${c.nearMrp}  cur=${c.currencyPrefix}  dist=${c.distanceFromMrp}').join("\n")}',
+        '${candidates.map((c) => '  ${c.value}  mrp=${c.nearMrp}  cur=${c.currencyPrefix}  dist=${c.distanceFromMrp}  sig=${c.signalStrength}').join("\n")}',
       );
 
       if (candidates.isEmpty) {
@@ -334,24 +320,45 @@ class MrpOcrService {
         (c) =>
             c.nearMrp &&
             c.value >= 10 &&
-            (c.currencyPrefix || c.hasDecimal),
+            (c.currencyPrefix || c.hasDecimal || c.signalStrength >= 4),
       );
       if (hasStrongMrpPrice) {
         candidates.removeWhere(
           (c) =>
-              c.nearMrp &&
               c.value < 10 &&
-              !c.currencyPrefix &&
-              !c.hasDecimal,
+              c.signalStrength < 4 &&
+              (!c.currencyPrefix || !c.hasDecimal),
+        );
+      }
+
+      final hasExplicitCurrencyPrice = candidates.any(
+        (c) => c.signalStrength >= 5 && c.value >= 10,
+      );
+      if (hasExplicitCurrencyPrice) {
+        candidates.removeWhere(
+          (c) =>
+              c.signalStrength <= 1 &&
+              !c.hasDecimal &&
+              c.value > 500,
         );
       }
 
       int score(_PriceCandidate c) {
         var score = 0;
+        score += c.signalStrength * 3;
         if (c.nearMrp) score += 4;
         if (c.currencyPrefix) score += 4;
         if (c.hasDecimal) score += 2;
         if (c.value >= 10 && c.value <= 5000) score += 1;
+        if (c.signalStrength >= 5 && c.value >= 10 && c.value <= 5000) {
+          score += 3;
+        }
+        if (c.signalStrength >= 5 && c.value < 10) {
+          score -= 6;
+        }
+        if (c.value > 9999 && c.signalStrength <= 2) {
+          score -= 6;
+        }
         if (c.nearMrp && !c.currencyPrefix && !c.hasDecimal && c.value < 10) {
           score -= 3;
         }
@@ -448,6 +455,50 @@ int? _distanceFromMrp(List<int> mrpEnds, int start) {
   return best;
 }
 
+void _addRegexCandidate({
+  required RegExpMatch match,
+  required String text,
+  required List<int> mrpEnds,
+  required void Function({
+    required double value,
+    required int position,
+    required bool nearMrp,
+    required bool currencyPrefix,
+    required int? distanceFromMrp,
+    required bool hasDecimal,
+    required int signalStrength,
+  })
+  addCandidate,
+  required int signalStrength,
+}) {
+  final rawAmount = match.group(1);
+  if (rawAmount == null) return;
+
+  final normalizedAmount = _normalizeOcrAmount(rawAmount);
+  final value = double.tryParse(normalizedAmount.replaceAll(',', '.'));
+  if (value == null || value < 2 || value >= 100000) return;
+
+  final start = match.start;
+  final end = match.end;
+  final tail = text.substring(end, (end + 20).clamp(0, text.length));
+
+  if (MrpOcrService._perUnitSlash.hasMatch(tail)) return;
+  if (MrpOcrService._perUnitWord.hasMatch(tail)) return;
+  if (MrpOcrService._weightUnit.hasMatch(tail)) return;
+
+  final distanceFromMrp = _distanceFromMrp(mrpEnds, start);
+
+  addCandidate(
+    value: value,
+    position: start,
+    nearMrp: distanceFromMrp != null && distanceFromMrp <= 150,
+    currencyPrefix: true,
+    distanceFromMrp: distanceFromMrp,
+    hasDecimal: normalizedAmount.contains('.') || normalizedAmount.contains(','),
+    signalStrength: signalStrength,
+  );
+}
+
 String _normalizeOcrAmount(String raw) {
   return raw
       .replaceAll(RegExp(r'[OoQqDd]'), '0')
@@ -476,6 +527,7 @@ class _PriceCandidate {
     required this.currencyPrefix,
     required this.distanceFromMrp,
     required this.hasDecimal,
+    required this.signalStrength,
   });
 
   final double value;
@@ -484,4 +536,5 @@ class _PriceCandidate {
   final bool currencyPrefix;
   final int? distanceFromMrp;
   final bool hasDecimal;
+  final int signalStrength;
 }

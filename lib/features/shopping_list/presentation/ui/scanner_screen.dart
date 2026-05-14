@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/themes/app_colors.dart';
 
-/// Full-screen camera preview that scans barcodes and QR codes.
-/// Pops with the decoded string as soon as a code is detected. Pops with
-/// `null` if the user backs out.
+/// Opens the device camera, captures an image, and scans it with ML Kit.
+/// Pops with the decoded string as soon as a supported code is detected.
+/// Pops with `null` if the user backs out of the camera flow.
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
 
@@ -15,39 +16,89 @@ class BarcodeScannerScreen extends StatefulWidget {
 }
 
 class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
-  final MobileScannerController _controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.normal,
-    facing: CameraFacing.back,
-    formats: const [
+  final ImagePicker _imagePicker = ImagePicker();
+  late final BarcodeScanner _barcodeScanner = BarcodeScanner(
+    formats: [
       BarcodeFormat.qrCode,
       BarcodeFormat.ean13,
       BarcodeFormat.ean8,
-      BarcodeFormat.upcA,
-      BarcodeFormat.upcE,
+      BarcodeFormat.upca,
+      BarcodeFormat.upce,
       BarcodeFormat.code128,
       BarcodeFormat.code39,
     ],
   );
 
-  bool _handled = false;
+  bool _isScanning = false;
+  String? _message;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _scanBarcode();
+      }
+    });
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _barcodeScanner.close();
     super.dispose();
   }
 
-  void _onDetect(BarcodeCapture capture) {
-    if (_handled) return;
-    if (capture.barcodes.isEmpty) return;
-    final first = capture.barcodes.first;
-    final code = first.rawValue;
-    debugPrint(
-      '[Scanner] detected -> rawValue="$code", format=${first.format.name}',
-    );
-    if (code == null || code.isEmpty) return;
-    _handled = true;
-    Navigator.of(context).pop(code);
+  Future<void> _scanBarcode() async {
+    if (_isScanning) return;
+    setState(() {
+      _isScanning = true;
+      _message = null;
+    });
+
+    try {
+      final photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear,
+        imageQuality: 90,
+      );
+
+      if (!mounted) return;
+      if (photo == null) {
+        Navigator.of(context).pop();
+        return;
+      }
+
+      final inputImage = InputImage.fromFilePath(photo.path);
+      final barcodes = await _barcodeScanner.processImage(inputImage);
+      if (!mounted) return;
+
+      for (final barcode in barcodes) {
+        final code = barcode.rawValue?.trim();
+        if (code == null || code.isEmpty) continue;
+        debugPrint(
+          '[Scanner] detected -> rawValue="$code", format=${barcode.format.name}',
+        );
+        Navigator.of(context).pop(code);
+        return;
+      }
+
+      setState(() {
+        _message =
+            'No barcode detected. Try again with the code centered and well-lit.';
+      });
+    } catch (e, st) {
+      debugPrint('[Scanner] error: $e');
+      debugPrint('$st');
+      if (!mounted) return;
+      setState(() {
+        _message =
+            'Camera scan failed. Please try again and allow camera access.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isScanning = false);
+      }
+    }
   }
 
   @override
@@ -70,94 +121,47 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
             fontSize: 18,
           ),
         ),
-        actions: [
-          ValueListenableBuilder<MobileScannerState>(
-            valueListenable: _controller,
-            builder: (context, state, _) {
-              final torchOn = state.torchState == TorchState.on;
-              return IconButton(
-                icon: Icon(
-                  torchOn
-                      ? Icons.flash_on_rounded
-                      : Icons.flash_off_rounded,
-                  color: Colors.white,
-                ),
-                onPressed: () => _controller.toggleTorch(),
-                tooltip: 'Torch',
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.cameraswitch_rounded, color: Colors.white),
-            onPressed: () => _controller.switchCamera(),
-            tooltip: 'Switch camera',
-          ),
-        ],
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          MobileScanner(
-            controller: _controller,
-            onDetect: _onDetect,
-            errorBuilder: (context, error, _) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    'Camera error: ${error.errorCode.name}',
-                    style: GoogleFonts.dmSans(color: Colors.white),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              );
-            },
-          ),
-
-          // Reticle overlay.
-          IgnorePointer(
-            child: Center(
-              child: Container(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
                 width: 260,
                 height: 260,
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.primary,
-                    width: 3,
-                  ),
+                  border: Border.all(color: AppColors.primary, width: 3),
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-            ),
-          ),
-
-          // Hint text.
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 48,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+              const SizedBox(height: 28),
+              if (_isScanning) ...[
+                const CircularProgressIndicator(),
+                const SizedBox(height: 18),
+              ],
+              Text(
+                _isScanning
+                    ? 'Opening the camera and scanning your barcode...'
+                    : (_message ?? 'Take a clear photo of the barcode or QR code'),
+                style: GoogleFonts.dmSans(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.55),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Text(
-                  'Point the camera at a barcode or QR code',
-                  style: GoogleFonts.dmSans(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                textAlign: TextAlign.center,
               ),
-            ),
+              const SizedBox(height: 18),
+              if (!_isScanning)
+                FilledButton.icon(
+                  onPressed: _scanBarcode,
+                  icon: const Icon(Icons.document_scanner_rounded),
+                  label: const Text('Try again'),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

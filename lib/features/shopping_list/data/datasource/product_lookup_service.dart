@@ -17,15 +17,12 @@ class ProductInfo {
     this.quantity,
   });
 
-  /// A human-friendly display name combining brand + product name when
-  /// available, falling back to whichever single field exists, then to the
-  /// raw barcode.
+  /// A human-friendly display name that prefers the API's `product_name`.
+  /// Falls back to brand, then to the raw barcode when needed.
   String get displayName {
-    final parts = <String>[];
-    if (brand != null && brand!.trim().isNotEmpty) parts.add(brand!.trim());
-    if (name != null && name!.trim().isNotEmpty) parts.add(name!.trim());
-    if (parts.isEmpty) return barcode;
-    return parts.join(' ');
+    if (name != null && name!.trim().isNotEmpty) return name!.trim();
+    if (brand != null && brand!.trim().isNotEmpty) return brand!.trim();
+    return barcode;
   }
 }
 

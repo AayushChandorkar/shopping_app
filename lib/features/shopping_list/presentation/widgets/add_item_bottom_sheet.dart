@@ -108,14 +108,17 @@ class _AddItemBottomSheetState extends ConsumerState<AddItemBottomSheet> {
     setState(() => _isScanning = false);
 
     if (info != null) {
+      final scannedName = info.name?.trim().isNotEmpty == true
+          ? info.name!.trim()
+          : info.displayName;
       debugPrint(
         '[Scan] match -> name=${info.name}, brand=${info.brand}, '
         'quantity=${info.quantity}, displayName="${info.displayName}"',
       );
-      _nameCtrl.text = info.displayName;
+      _nameCtrl.text = scannedName;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Found: ${info.displayName} — enter a price'),
+          content: Text('Found: $scannedName — enter a price'),
           duration: const Duration(seconds: 2),
         ),
       );
